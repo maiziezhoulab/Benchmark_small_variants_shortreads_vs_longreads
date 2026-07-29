@@ -5,10 +5,10 @@
 # For each of 5 GIAB strata (lowmap, segdup, MHC, tandem repeats + homopolymers,
 # all-difficult) we intersect the tables against the region BED and keep only
 # PASS calls — a DeepVariant VCF also lists RefCall sites, which are hom-ref,
-# not variants. Then LR and SR are plotted against each other three ways: a
-# histogram split by SNP/INDEL, one with both pooled, and a bar summary of the
-# mean fraction plus the % of loci above 0. 15 figures and 10 filtered tables,
-# both cached, so redrawing costs nothing.
+# not variants. Then LR and SR are plotted against each other three ways:
+# (1) a histogram split by SNP/INDEL, 
+# (2) one with both pooled
+# (3) a bar summary of the mean fraction plus the % of loci 
 
 import os
 import subprocess
