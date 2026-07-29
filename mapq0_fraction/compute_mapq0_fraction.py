@@ -7,10 +7,9 @@
 #   python compute_mapq0_fraction.py --library LR --vcf x.vcf.gz --bam x.bam --out x.tsv
 #
 # Secondary alignments are counted but kept out of total_mapped_depth: minimap2
-# emits them for HiFi (2.7M of 8.1M loci) and gives them MAPQ 0, so including
+# emits them for HiFi and gives them MAPQ 0, so including
 # them would inflate mapq0_fraction. BWA-MEM emits none, so SR is unaffected.
 #
-# 8 cores: ~6h for 8.1M HiFi loci, ~2h for 11.9M Illumina loci, ~100G mem.
 
 import argparse
 import os

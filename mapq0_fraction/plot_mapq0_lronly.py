@@ -4,7 +4,7 @@
 # Takes the low-mappability loci called by long reads but not by short reads,
 # re-queries the short-read BAM at those positions whether or not a variant was
 # called there, and overlays the LR and SR MAPQ=0 distributions for SNP and
-# INDEL. Swap LR_TSV / SR_TSV to region_plots_PASS/<region>/ for another stratum.
+# INDEL. 
 
 import os
 
@@ -51,9 +51,6 @@ def get_lr_only(lr_tsv, sr_tsv):
 
 
 # Step 2: Extract SR mapq0_fraction from BAM for each LR-only locus
-# note this filters is_duplicate, which compute_mapq0_fraction.py does not.
-# that is how the figure was made, left alone; only affects the orange
-# distribution here.
 def extract_sr_mapq(lr_only, bam_path):
 
     # sort first so the BAM is read front to back instead of seeking around
