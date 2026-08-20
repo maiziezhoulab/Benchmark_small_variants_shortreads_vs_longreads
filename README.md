@@ -87,10 +87,7 @@ entropy.
 | [`compute_GC.py`](som/compute_GC.py), [`compute_kmer_entropy.py`](som/compute_kmer_entropy.py) | Per-neuron GC content and 4-mer Shannon entropy |
 | [`snp_indel_som/`](som/snp_indel_som/) | The same pipeline on windows centered on variant sites instead of a full tiling |
 
-[`00_config.sh`](som/00_config.sh) holds the shared paths and output prefixes;
-[`run_som_4mer_500bp.sh`](som/run_som_4mer_500bp.sh) drives training and mapping
-end to end, and [`run_map_only.sh`](som/run_map_only.sh) projects an additional
-call set onto an already-trained map.
+
 
 ### Figures
 
