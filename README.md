@@ -91,10 +91,7 @@ entropy.
 
 ### Figures
 
-`collect_*.py` build tidy tables under [`figures/data/`](figures/data/), `fig_*.py`
-render them to `figures/output/`, and `compose_panels.py` assembles multi-panel
-layouts. The tables are committed, so the figures can be regenerated without
-access to the alignments or call sets.
+
 
 ## Usage
 
