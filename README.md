@@ -46,8 +46,7 @@ complexity.
 | [`som/`](som/) | Do low-mappability regions of similar sequence composition share the same caller error profile? |
 | [`figures/`](figures/) | Publication figures assembled from the tables the analyses above produce. |
 
-Further components of the study — caller concordance, coverage subsampling and
-B-allele frequency distributions — are not yet in this repository.
+
 
 ### Accuracy across region strata
 
@@ -131,14 +130,10 @@ separate conda environment.
 ## Data Availability
 
 Truth sets and region stratifications are from
-[GIAB](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/). Alignments and
-caller output are held on lab storage and are not distributed here.
+[GIAB](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/). 
 
-Two caveats apply to the committed figures: the ONT panels use library `Nano_L1`,
-which is degraded (13.7 % error rate, 61 % of reads unmapped) and is not
-representative of ONT performance; and ONT DeepVariant was not run, so the ONT
-panels show three callers where HiFi shows four.
+
 
 ### Citation
 
-Manuscript in preparation.
+
