@@ -96,7 +96,7 @@ entropy.
 ## Usage
 
 Paths to alignments, call sets and region BEDs are set in a `Config` block at the
-top of each Python script, or in [`som/00_config.sh`](som/00_config.sh) for the
+top of each Python script for the
 SOM pipeline, and need to be edited before running.
 
 ```bash
