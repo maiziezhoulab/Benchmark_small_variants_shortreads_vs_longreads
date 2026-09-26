@@ -14,12 +14,12 @@ Genomic annotations were taken from [GIAB Genome Stratifications](https://github
 
 We began with existing region-specific BED sets of SNP/indel-bearing windows with a nominal size of 500 bp. These were precomputed windows rather than new windows centered on each variant. Before feature extraction, intervals were sorted within chromosomes. Adjacent intervals were connected when their intervening gap was less than 250 bp and at least one interval was no longer than 10 bp. Each connected component was replaced by its spanning interval. Any interval still no longer than 10 bp was expanded around its midpoint to a target length of 500 bp, with adjustment at chromosome boundaries. Overlaps introduced by expansion were merged. No second splitting step was applied. Consequently, the resulting windows have variable lengths and can include flanking sequence added during cleanup; they should not all be described as exactly 500 bp or as restricted to the original annotation boundaries. The feature inputs contained 117,059 low-mappability windows and 73,584 segmental-duplication windows.
 
-Reference-sequence composition was represented by the frequencies of all 256 possible DNA 4-mers using laytr. For window $i$, let $s_i$ be the sequence retained by the feature extractor, $n_i$ its length, $c_u(s_i)$ the overlapping count of 4-mer $u$, and $\operatorname{rc}(s_i)$ its reverse complement. Features were
+Reference-sequence composition was represented by the frequencies of all 256 possible DNA 4-mers using laytr. For window $i$, let $s_i$ be the sequence retained by the feature extractor, $n_i$ its length, $c_u(s_i)$ the overlapping count of 4-mer $u$, and $\mathrm{rc}(s_i)$ its reverse complement. Features were
 
-$$
-f_{iu}=\frac{c_u(s_i)+c_u(\operatorname{rc}(s_i))}{2(n_i-3)},
+```math
+f_{iu}=\frac{c_u(s_i)+c_u(\mathrm{rc}(s_i))}{2(n_i-3)},
 \qquad u\in\{A,C,G,T\}^{4}.
-$$
+```
 
 The archived extractor removes characters outside uppercase A/C/G/T before counting. This operation differs from omitting only k-mers that overlap ambiguous bases. Counts from both orientations make the feature representation invariant to reverse complementation while retaining 256 coordinates. Each feature vector sums to one; no additional feature standardization or dimensionality reduction was applied before SOM training. BED row order was preserved between feature extraction and map assignment.
 
@@ -27,32 +27,32 @@ The archived extractor removes characters outside uppercase A/C/G/T before count
 
 A separate 15 × 15 hexagonal self-organizing map (SOM; 225 neurons) was constructed for each region-specific feature matrix using [MiniSom](https://github.com/JustGlowing/minisom). The SOM provides a common coordinate system that aims to place windows with similar sequence composition near one another, following the framework of [Kohonen](https://doi.org/10.1007/BF00337288). For input vector $\mathbf f_i$ and neuron codebook vector $\mathbf w_j$, the best-matching unit was
 
-$$
-b(i)=\underset{j}{\operatorname{argmin}}\;\|\mathbf f_i-\mathbf w_j\|_2.
-$$
+```math
+b(i)=\underset{j}{\mathrm{argmin}}\;\|\mathbf f_i-\mathbf w_j\|_2.
+```
 
 Training used Euclidean activation distance, a Gaussian neighborhood, initial neighborhood width σ₀ = 2.5, initial learning rate η₀ = 1.0, and random seed 2023. Each codebook vector was initialized with independent Uniform(−1,1) entries and normalized to unit Euclidean length. A sequential update has the form
 
-$$
+```math
 \mathbf w_j(t+1)=\mathbf w_j(t)+\eta(t)h_{b(i),j}(t)
 \left[\mathbf f_i-\mathbf w_j(t)\right],
-$$
+```
 
 where $h$ denotes the Gaussian neighborhood on the hexagonal lattice,
 
-$$
+```math
 h_{bj}(t)=\exp\left[-\frac{\|\mathbf q_b-\mathbf q_j\|_2^2}{2\sigma(t)^2}\right],
-$$
+```
 
-with $\mathbf q_j$ denoting the Euclidean lattice coordinate of neuron j. In the inspected MiniSom 2.3.1 implementation, both the learning rate and neighborhood width use the decay $a(t)=a_0/[1+2t/T]$, with $T=20{,}000$. The training call was `MiniSom.train_batch` with 20,000 iterations. Despite this function name, the inspected implementation performs one sequential sample update per iteration without shuffling; these are not 20,000 full-data epochs. Because each input matrix contains more than 20,000 rows, this schedule uses the first 20,000 ordered rows for updates. All windows were subsequently assigned to their nearest codebook vector. We retained each window's assignment and quantization error, $\|\mathbf f_i-\mathbf w_{b(i)}\|_2$, and the number of windows assigned to each neuron. Within each region, SR and LR overlays used the same feature input, SOM configuration and random seed, providing a common regional coordinate system. Low-mappability and segmental-duplication maps were learned separately; their neuron coordinates are not directly homologous.
+with $\mathbf q_j$ denoting the Euclidean lattice coordinate of neuron j. In the inspected MiniSom 2.3.1 implementation, both the learning rate and neighborhood width use the decay $a(t)=a_0/[1+2t/T]$, with $T=20{,}000$. The training call was `MiniSom.train_batch` with 20,000 iterations. Despite this function name, the inspected implementation performs one sequential sample update per iteration without shuffling; these are not 20,000 full-data epochs. Because each input matrix contains more than 20,000 rows, this schedule uses the first 20,000 ordered rows for updates. All windows were subsequently assigned to their nearest codebook vector. We retained each window's assignment and quantization error, $\lVert \mathbf f_i-\mathbf w_{b(i)}\rVert_2$, and the number of windows assigned to each neuron. Within each region, SR and LR overlays used the same feature input, SOM configuration and random seed, providing a common regional coordinate system. Low-mappability and segmental-duplication maps were learned separately; their neuron coordinates are not directly homologous.
 
 Annotated variants were located by their zero-based VCF anchor, $p=\mathrm{POS}-1$, in the half-open BED window containing that position and assigned to that window's neuron. Counts were pooled within each neuron and variant class. The archived SOM-overlay implementation assigns a single decision to each VCF record with precedence QUERY TP, then QUERY FP, then TRUTH FN. Its displayed precision is TP_query/(TP_query + FP_query), whereas its historical recall field is
 
-$$
+```math
 R_{\mathrm{SOM,legacy}}=
 \frac{\mathrm{TP}_{\mathrm{query}}}
 {\mathrm{TP}_{\mathrm{query}}+\mathrm{FN}_{\mathrm{selected\ truth}}}.
-$$
+```
 
 The selected truth-FN count includes only records not assigned a query TP or FP decision by that precedence rule. This historical quantity is a recall proxy and is distinguished from the truth-side recall used in the paired and tract-stratified analyses below. Overlay variant type was inferred from REF/ALT lengths; no smoothing, pseudocount, or minimum-denominator filter was applied to these historical map metrics. Undefined ratios were left missing.
 
@@ -60,9 +60,9 @@ The selected truth-FN count includes only records not assigned a query TP or FP 
 
 To describe local sequence diversity, Shannon entropy was calculated from overlapping 4-mers in the forward reference sequence of each window:
 
-$$
+```math
 H_4(i)=-\sum_{u:p_{iu}>0}p_{iu}\log_2p_{iu},
-$$
+```
 
 where $p_{iu}$ is the relative frequency of 4-mer $u$ in that sequence. The theoretical maximum is 8 bits for a uniform distribution over 256 4-mers. This entropy calculation uses the forward reference counts rather than the strand-symmetrized SOM feature vector. Windows containing non-ACGT bases were either excluded under the strict policy or summarized from valid overlapping 4-mers under the drop policy. Window-level entropy was summarized within neurons, including the median used for comparisons with the archived neuron-level metrics. Available entropy–metric correlation tables were calculated using Spearman rank correlation on finite neuron pairs.
 
@@ -74,19 +74,19 @@ To compare recoverability at corresponding truth variants, SR and LR hap.py reco
 
 Within a neuron, let $a$, $b$, $c$, and $d$ denote the numbers of paired truth variants recovered by both technologies, by LR only, by SR only, and by neither, respectively. The conditional SR deficit among LR-recovered variants and the difference in truth-side recall were summarized as
 
-$$
+```math
 C=\frac{b}{a+b},\qquad
 \Delta R=\frac{b-c}{a+b+c+d}.
-$$
+```
 
 For exploratory paired-neuron comparisons, recovery discordance was evaluated using a two-sided exact McNemar test. With $b$ LR-only and $c$ SR-only recoveries, this was implemented as a binomial test with $b+c$ trials and probability 0.5 under the null of symmetric discordance. P values were adjusted across finite neuron tests using the Benjamini–Hochberg procedure. These tests did not account for dependence among variants within tracts and were treated as exploratory.
 
 To examine whether differences among neurons were associated with their variant composition, explanatory logistic models were fitted among LR-recovered truth variants. The response was $Y_i=1$ when SR classified variant i as FN and $Y_i=0$ when SR classified it as TP. Thus, the modeled probability is conditional on LR recovery and is not overall SR recall. Models contained an intercept and no neuron indicators:
 
-$$
-\operatorname{logit}\Pr(Y_i=1)=\beta_0+\sum_k\beta_kz_{ik},
+```math
+\mathrm{logit}\,\Pr(Y_i=1)=\beta_0+\sum_k\beta_kz_{ik},
 \qquad z_{ik}=\frac{x_{ik}-\bar{x}_k}{s_k}.
-$$
+```
 
 Missing predictor values were median-imputed, constant predictors were removed, and predictors were standardized using their population standard deviations. Models were fitted by unpenalized maximum-likelihood logistic regression using statsmodels. The SNP variant-composition model included indicators for reference/alternate heterozygotes (BLT = het) and alternate/alternate heterozygotes (BLT = hetalt) and overlap with segmental-duplication and tandem-repeat/homopolymer annotations. The corresponding indel model additionally included an insertion indicator and log₁₀(|Δlength| + 1). Signed indel length was derived from the genotype-carried alternate allele with the largest absolute REF–ALT length difference, using available alternate alleles if genotype-carried alleles could not be identified.
 
@@ -94,10 +94,10 @@ Two additional completed SNP models incorporated full-tract geometry, defined be
 
 Observed and fitted probabilities were averaged within neuron $j$ to obtain $O_j$ and $E_j$, and the neuron residual was $G_j=O_j-E_j$. Between-neuron variance attenuation was summarized as
 
-$$
-A=1-\frac{\operatorname{Var}_w(G_j)}{\operatorname{Var}_w(O_j)},
+```math
+A=1-\frac{\mathrm{Var}_w(G_j)}{\mathrm{Var}_w(O_j)},
 \qquad w_j=n_j,
-$$
+```
 
 where $n_j$ is the number of LR-recovered truth variants and the weighted variance uses the corresponding weighted mean. Residual-neuron summaries honored the stored support masks; the indel summary required $n_j\geq20$. This screen was applied to neuron summaries, not to fitting the variant-level model. All fitted probabilities and variance summaries were calculated in the fitting sample. These models are explanatory association analyses, without held-out prediction, cross-validation, or tract-cluster robust uncertainty; $A$ is not a predictive R² or a causal attribution of variation to geometry.
 
@@ -107,21 +107,21 @@ For the five region classes, overlapping or directly adjacent intervals in the o
 
 For a variant anchor $p$ in tract $[s,e)$, we defined
 
-$$
+```math
 L=e-s,\qquad d=\min(p-s,e-1-p),\qquad r=\frac{2d}{L}.
-$$
+```
 
 Here $L$ is tract length, $d$ is distance to the nearest terminal tract base, and $r$ is relative inward position: zero at an edge and approaching one at the midpoint. Indels were assigned by the VCF POS anchor rather than by their full reference or alternate-allele span. Variants outside the tract set were excluded.
 
 Records were classified separately for each technology and variant type using the corresponding sample's BVT field, with REF/ALT-length inference when BVT did not identify SNP or INDEL. TRUTH decisions TP/FN supplied recall counts, and QUERY decisions TP/FP supplied precision counts. Records lacking valid alternate alleles or an applicable decision were excluded; no additional QUAL, depth, MAPQ, PASS, or minimum-tract-length filter was imposed. Within each stratum, counts were pooled before computing
 
-$$
+```math
 P=\frac{\mathrm{TP}_{\mathrm{query}}}{\mathrm{TP}_{\mathrm{query}}+\mathrm{FP}},
 \qquad
 R=\frac{\mathrm{TP}_{\mathrm{truth}}}{\mathrm{TP}_{\mathrm{truth}}+\mathrm{FN}},
 \qquad
 F_1=\frac{2PR}{P+R}.
-$$
+```
 
 Truth-side and query-side TP counts were retained separately; metrics were not averaged across individual tracts. Zero-denominator estimates, and F1 when its defining expression was undefined, were retained as missing.
 
