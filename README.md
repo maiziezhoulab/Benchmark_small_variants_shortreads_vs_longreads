@@ -97,8 +97,7 @@ full tracts and benchmark-confident intervals.
 
 The Methods draft for the **completed SOM, paired-comparison and
 tract-geometry module** is in [METHODS.md](METHODS.md), with formulas, model
-definitions, parameters and bin boundaries. This contribution does not rewrite
-the radar/MAPQ analyses and does not include GC heatmaps.
+definitions, parameters and bin boundaries.
 
 - [Methods implementation evidence](docs/methods_evidence.md)
 - [Author checks before submission](docs/author_checks.md)
