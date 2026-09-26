@@ -99,7 +99,7 @@ A=1-\frac{\operatorname{Var}_w(G_j)}{\operatorname{Var}_w(O_j)},
 \qquad w_j=n_j,
 $$
 
-where $n_j$ is the number of LR-recovered truth variants and the weighted variance uses the corresponding weighted mean. Residual-neuron summaries honored the stored support masks, reproduced in the accompanying [support-mask table](docs/neuron_support_masks.tsv); the indel summary required $n_j\geq20$. This screen was applied to neuron summaries, not to fitting the variant-level model. All fitted probabilities and variance summaries were calculated in the fitting sample. These models are explanatory association analyses, without held-out prediction, cross-validation, or tract-cluster robust uncertainty; $A$ is not a predictive R² or a causal attribution of variation to geometry.
+where $n_j$ is the number of LR-recovered truth variants and the weighted variance uses the corresponding weighted mean. Residual-neuron summaries honored the stored support masks; the indel summary required $n_j\geq20$. This screen was applied to neuron summaries, not to fitting the variant-level model. All fitted probabilities and variance summaries were calculated in the fitting sample. These models are explanatory association analyses, without held-out prediction, cross-validation, or tract-cluster robust uncertainty; $A$ is not a predictive R² or a causal attribution of variation to geometry.
 
 ## Full-tract geometry and pooled calling performance
 
@@ -136,5 +136,3 @@ Metrics were summarized by length alone and by length crossed with either absolu
 ## Display and reproducibility
 
 Strata plots used common categorical coordinates for each bin, so point positions are comparable across tract-length groups. Equal visual spacing does not represent equal physical distance. Missing estimates interrupted connecting lines, and no values were interpolated to align curve starts. Precision panels used common 80–100% tick ranges, and recall/F1 panels used 0–100% ranges across technologies, variant types, and regions. Source tables retain the counts and geometry summaries omitted from the simplified figures. The final strata figures do not display confidence intervals; no tract bootstrap was performed for that figure set.
-
-The included [analysis scripts](som/README.md) and [implementation evidence](docs/methods_evidence.md) identify the computational stages supporting this section. The [author checks](docs/author_checks.md) distinguish incomplete historical provenance and legacy output conventions from the verified final tract-stratified calculations.
