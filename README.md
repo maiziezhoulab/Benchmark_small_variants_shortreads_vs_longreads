@@ -16,10 +16,12 @@ the two technologies: read length, alignment accuracy, and local sequence
 complexity.
 
 ## Table of Contents
+
 1. [Benchmark Setup](#benchmark-setup)
 2. [Analyses](#analyses)
-3. [Usage](#usage)
-4. [Data Availability](#data-availability)
+3. [Methods](#methods)
+4. [Usage](#usage)
+5. [Data Availability](#data-availability)
 
 ## Benchmark Setup
 
@@ -36,6 +38,8 @@ complexity.
 - **Region strata:** GIAB genome stratification v3.6 — `AllConf`, `AllDiff`,
   `LowMap`, `SegDup`, `MHC`, `TRandHomo`
 - **Evaluation:** `hap.py`, one run per caller per stratum, `PASS` calls
+  for the overview summaries. Record-level filtering for the SOM/geometry module
+  is specified separately in [Methods](METHODS.md#benchmark-inputs-and-analysis-scope).
 
 ## Analyses
 
@@ -43,8 +47,8 @@ complexity.
 |---|---|
 | [`radar_plots/`](radar_plots/) | How does caller accuracy differ between platforms within each region stratum? |
 | [`mapq0_fraction/`](mapq0_fraction/) | How ambiguously do reads align at the loci that were called, and does that track the accuracy gap? |
-| [`som/`](som/) | Do low-mappability regions of similar sequence composition share the same caller error profile? |
-| [`figures/`](figures/) | Publication figures assembled from the tables the analyses above produce. |
+| [`som/`](som/README.md) | How do reference-sequence composition and full-tract geometry relate to SR/HiFi calling performance? |
+| Publication figures | Generated from analysis tables; figure assets are not bundled in this source repository. |
 
 
 
@@ -69,35 +73,46 @@ coverage control.
 | [`plot_mapq0_by_region.py`](mapq0_fraction/plot_mapq0_by_region.py) | Intersects per-site tables with stratification BEDs, keeps `PASS` calls, compares LR vs SR per stratum |
 | [`plot_mapq0_LRonly.py`](mapq0_fraction/plot_mapq0_LRonly.py) | Restricts to loci called by long reads only, re-measures MAPQ=0 in the short-read BAM |
 
-### Sequence composition of difficult regions
+### Sequence composition and tract geometry
 
-Low-mappability intervals are tiled into 500 bp windows and embedded on a
-self-organizing map by 4-mer composition, so windows land next to each other
-because their sequence is alike rather than because they carry the same
-annotation. `hap.py`-annotated call sets are then projected onto the trained map,
-giving per-neuron precision and recall alongside per-neuron GC content and 4-mer
-entropy.
+The completed HG002 analysis uses separate low-mappability and
+segmental-duplication SOMs constructed from reference 4-mer frequencies.
+Existing variant-bearing windows undergo short-interval merge/expand cleanup
+before feature extraction. SR and HiFi outcomes are compared in a common
+regional map coordinate system, and exact paired truth records support
+conditional recovery comparisons and explanatory logistic models.
 
-| Script | Description |
-|---|---|
-| [`split_lowmap_to_500.py`](som/split_lowmap_to_500.py) | Tiles the low-mappability BED into 500 bp windows |
-| [`run_kfeat.sh`](som/run_kfeat.sh) | `laytr kfeat`, k = 4, giving a 256-dimensional composition vector per window |
-| [`build_lowmap_som_15x15.py`](som/build_lowmap_som_15x15.py) | Trains a 15 × 15 hexagonal MiniSom over those vectors |
-| [`map_vcf_to_som_15x15.py`](som/map_vcf_to_som_15x15.py) | Projects a `hap.py` VCF onto the map → per-neuron SNP and INDEL precision and recall |
-| [`compute_GC.py`](som/compute_GC.py), [`compute_kmer_entropy.py`](som/compute_kmer_entropy.py) | Per-neuron GC content and 4-mer Shannon entropy |
-| [`snp_indel_som/`](som/snp_indel_som/) | The same pipeline on windows centered on variant sites instead of a full tiling |
+A complementary analysis uses full GIAB tract boundaries to evaluate precision,
+recall and F1 by tract length, distance to the nearest edge, and relative inward
+position. It covers low-mappability regions, segmental duplications, all difficult
+regions, tandem repeats/homopolymers and the MHC, separately for SNPs and INDELs.
+The historical SOM recall convention and the final truth-side strata recall
+are explicitly distinguished in the Methods.
 
+The [SOM analysis directory](som/README.md) lists the actual scripts and input
+interfaces. Methods and plots preserve the distinction between feature windows,
+full tracts and benchmark-confident intervals.
 
+## Methods
 
-### Figures
+The Methods draft for the **completed SOM, paired-comparison and
+tract-geometry module** is in [METHODS.md](METHODS.md), with formulas, model
+definitions, parameters and bin boundaries. This contribution does not rewrite
+the radar/MAPQ analyses and does not include GC heatmaps.
 
+- [Methods implementation evidence](docs/methods_evidence.md)
+- [Author checks before submission](docs/author_checks.md)
+- [Exact historical neuron-support masks](docs/neuron_support_masks.tsv)
 
+The narrative describes the executed methods. The author checks identify
+training-schedule and historical-metric issues that require scientific review
+before treating all legacy outputs as final manuscript results.
 
 ## Usage
 
-Paths to alignments, call sets and region BEDs are set in a `Config` block at the
-top of each Python script for the
-SOM pipeline, and need to be edited before running.
+For the existing MAPQ plotting scripts, edit their configuration blocks as needed.
+The SOM scripts accept command-line inputs; see [som/README.md](som/README.md)
+for feature extraction, exact truth pairing, tract metrics and redraw commands.
 
 ```bash
 # Per-site MAPQ=0 tables, one per library. Cluster job: ~6 h / 100 GB for 8.1M
@@ -106,19 +121,14 @@ python mapq0_fraction/compute_mapq0_fraction.py --library LR \
     --vcf Hifi_L1/DeepVariant/output.vcf.gz --bam Hifi_L1.bam --out LR.tsv
 python mapq0_fraction/plot_mapq0_by_region.py
 
-# SOM: tile, featurize, train, then project a call set onto the trained map
-python som/split_lowmap_to_500.py $LOWMAP_BED lowmap_500_len4plus.bed
-bash   som/run_kfeat.sh
-sbatch som/run_som_4mer_500bp.sh
-sbatch som/run_map_only.sh happy_results/LowMap/DeepVariant.vcf.gz lowmapDV_SR
-
-# Collect into tidy tables, then render the publication figures
-python figures/collect_mapq0_NA24385.py && python figures/fig_mapq0_NA24385.py
-python figures/collect_radar_NA24385.py && python figures/fig_radar_NA24385.py
+# Redraw completed strata tables without rereading VCFs.
+python som/11_stratified_metrics.py \
+  --tables-prefix "$TABLE_PREFIX" --vtype SNP --min-n 50 \
+  --region-label "$REGION_LABEL" --out-prefix "$OUT_PREFIX"
 ```
 
 Requires Python 3 with `pysam`, `pandas`, `numpy`, `matplotlib`, `joblib`,
-`minisom`, `laytr` and `Pillow`, plus `bedtools` on `PATH`. `hap.py` runs in a
+`minisom`, `laytr`, `scipy`, `statsmodels` and `Pillow`, plus `bedtools` on `PATH`. `hap.py` runs in a
 separate conda environment.
 
 ## Data Availability
