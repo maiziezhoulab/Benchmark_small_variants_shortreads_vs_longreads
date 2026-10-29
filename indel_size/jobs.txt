@@ -1,0 +1,12 @@
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/LR/Hifi_L1/Clair3/happy_results/AllConf/Clair3.vcf.gz	Hifi_L1|Clair3
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/LR/Hifi_L1/DeepVariant/happy_results/AllConf/DeepVariant.vcf.gz	Hifi_L1|DeepVariant
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/LR/Hifi_L1/NanoCaller/happy_results/AllConf/NanoCaller.vcf.gz	Hifi_L1|NanoCaller
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/ASM/Hifi_L1/Dipcall/happy_results/AllConf/Dipcall.vcf.gz	Hifi_L1|Dipcall
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/ASM/Hifi_L1/PAV/happy_results/AllConf/PAV.vcf.gz	Hifi_L1|PAV
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/LR/Nano_L2/Clair3/happy_results/AllConf/Clair3.vcf.gz	Nano_L2|Clair3
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/LR/Nano_L2/NanoCaller/happy_results/AllConf/NanoCaller.vcf.gz	Nano_L2|NanoCaller
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/ASM/Nano_L2/Dipcall/happy_results/AllConf/Dipcall.vcf.gz	Nano_L2|Dipcall
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/ASM/Nano_L2/PAV/happy_results/AllConf/PAV.vcf.gz	Nano_L2|PAV
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/SR/SR_L1/DeepVariant/happy_results/AllConf/DeepVariant.vcf.gz	SR_L1|DeepVariant
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/SR/SR_L1/GATK/happy_results/AllConf/GATK.vcf.gz	SR_L1|GATK
+/data/maiziezhou_lab/Yichen/Projects/SNP_INDEL_LR/GRCh38_no_alt_Call/SR/SR_L1/Strelka2/happy_results/AllConf/Strelka2.vcf.gz	SR_L1|Strelka2
